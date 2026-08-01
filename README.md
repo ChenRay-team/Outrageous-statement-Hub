@@ -17,4 +17,4 @@
 # 可以用来做什么
 1. 可以随便的发在群里面，帮助群友回忆黑历史
 # 特别鸣谢
-此项目受到[EasyBotHUB](https://github.com/Mxmilu666/bangbang93HUB)启发而创建
+此项目受到[EasyBotHUB](https://github.com/easybot-team/EasybotHUB)启发而创建
