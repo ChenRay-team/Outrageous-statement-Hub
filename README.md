@@ -17,7 +17,16 @@
 - **💬 评论区**：登录 GitHub 后可以吐槽、留言
 
 > [!IMPORTANT]
-> 首次使用前需管理员配置：在 GitHub 创建一个 OAuth App（Homepage 填网站地址），并把生成的 **Client ID** 填入 `site/app.js` 顶部的 `CLIENT_ID`。之后群友打开网站点"登录 GitHub"，在浏览器输入设备码确认即可。
+> 登录功能需要 **OAuth 代理（Cloudflare Worker）**：由于 GitHub 设备流接口不支持跨域（CORS），纯 Pages 网站无法直接登录。请按下方说明部署 `oauth-worker/worker.js` 到 Cloudflare Workers，把生成的 Worker 地址填到 `site/app.js` 顶部的 `OAUTH_PROXY`。
+
+### 🔐 部署 OAuth 代理（Cloudflare Worker）
+1. 注册 [Cloudflare](https://dash.cloudflare.com)（免费）
+2. 打开 **Workers & Pages** → **Create application** → **Worker** → 创建
+3. 把 `oauth-worker/worker.js` 的代码粘贴进编辑器，保存并部署
+4. 部署后你会得到一个 Worker 地址，形如 `https://xxx.workers.dev`
+5. 把该地址填到 `site/app.js` 顶部的 `OAUTH_PROXY` 常量（需重新提交推送）
+
+> 设备流换 token 只用 `client_id`（不需要 `client_secret`），所以 Worker 里不用存任何密钥，可放心部署。
 
 # 如何提交逆天发言
 1. 表情包和群友集体发言直接放在仓库**根目录**即可

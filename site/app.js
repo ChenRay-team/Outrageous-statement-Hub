@@ -8,8 +8,11 @@
  * ============================================================ */
 
 // ============ 配置 ============
-// 改成你自己的 Client ID（GitHub OAuth App，用于设备授权码登录）
+// GitHub OAuth App 的 Client ID（设备授权码登录）
 const CLIENT_ID = 'Ov23lil3ni9BVMNmB5UU';
+// OAuth 代理地址：部署 Cloudflare Worker 后把地址填这里
+// 例如 https://your-worker-name.your-subdomain.workers.dev
+const OAUTH_PROXY = 'https://oauth-proxy.your-worker.workers.dev';
 // 仓库信息
 const REPO_OWNER = 'ChenRay-team';
 const REPO_NAME = 'Outrageous-statement-Hub';
@@ -91,8 +94,8 @@ async function login() {
     return;
   }
   try {
-    // 1) 申请设备码
-    const reg = await fetch('https://github.com/login/device/code', {
+    // 1) 申请设备码（走 OAuth 代理解决 CORS）
+    const reg = await fetch(`${OAUTH_PROXY}/device/code`, {
       method: 'POST',
       headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
       body: JSON.stringify({ client_id: CLIENT_ID, scope: 'repo' }),
@@ -104,9 +107,9 @@ async function login() {
     alert(`请到浏览器打开：\n${verification_uri}\n\n输入设备码：${user_code}\n（打开后自动开始，本弹窗确定后等待授权，最长 ${Math.floor(expires_in / 60)} 分钟）`);
     window.open(verification_uri, '_blank');
 
-    // 3) 轮询获取令牌
+    // 3) 轮询获取令牌（走 OAuth 代理解决 CORS）
     const poll = async () => {
-      const r = await fetch('https://github.com/login/oauth/access_token', {
+      const r = await fetch(`${OAUTH_PROXY}/access_token`, {
         method: 'POST',
         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({ client_id: CLIENT_ID, device_code, grant_type: 'urn:ietf:params:oauth:grant-type:device_code' }),
@@ -128,6 +131,7 @@ async function login() {
     if (!access_token) throw new Error('授权超时，请重试');
 
     token = access_token;
+    sessionStorage.setItem('hub_token', access_token);
     user = await gh('/user');
     renderLogin();
     setMsg('upload-msg', `登录成功：${user.login}`, 'ok');
@@ -141,7 +145,24 @@ async function login() {
 function logout() {
   token = null;
   user = null;
+  sessionStorage.removeItem('hub_token');
   renderLogin();
+}
+
+// 尝试从 sessionStorage 恢复登录会话
+async function restoreSession() {
+  const saved = sessionStorage.getItem('hub_token');
+  if (!saved) return;
+  token = saved;
+  try {
+    user = await gh('/user');
+    renderLogin();
+  } catch (e) {
+    // token 失效则清除
+    token = null;
+    sessionStorage.removeItem('hub_token');
+    renderLogin();
+  }
 }
 
 function renderLogin() {
@@ -517,6 +538,7 @@ function init() {
   renderLogin();
   loadGallery();
   loadComments();
+  restoreSession();   // 恢复登录会话（异步，不阻塞图库加载）
 }
 
 // 工具函数 setMsg
