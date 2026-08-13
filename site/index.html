@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>逆天言论HUB</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💩</text></svg>" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <h1 class="logo">💩 逆天言论HUB</h1>
+      <nav class="topbar-nav">
+        <button id="btn-gallery" class="nav-btn active">📸 图库</button>
+        <button id="btn-upload" class="nav-btn">⬆️ 上传图片</button>
+        <button id="btn-comments" class="nav-btn">💬 评论区</button>
+        <a class="nav-btn repo-link" href="https://github.com/ChenRay-team/Outrageous-statement-Hub" target="_blank" rel="noopener">GitHub ⧉</a>
+      </nav>
+      <div class="user-area">
+        <span id="login-status" class="login-status"></span>
+        <button id="btn-login" class="btn btn-primary hidden">登录 GitHub</button>
+        <button id="btn-logout" class="btn btn-ghost hidden">退出</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ 图库 ============ -->
+    <section id="view-gallery" class="view">
+      <div class="toolbar">
+        <nav id="breadcrumb" class="breadcrumb"><button class="crumb active" data-path="">🏠 根目录</button></nav>
+        <span id="dir-count" class="dir-count"></span>
+        <input id="search-input" type="search" placeholder="🔍 在当前目录搜索…" />
+        <label class="chk"><input id="chk-gif-only" type="checkbox" /> 只看 GIF</label>
+      </div>
+      <div id="gallery" class="gallery"></div>
+      <p id="gallery-empty" class="empty hidden">这个目录里没有内容～</p>
+    </section>
+
+    <!-- ============ 上传 ============ -->
+    <section id="view-upload" class="view hidden">
+      <div class="card">
+        <h2>⬆️ 提交新图片</h2>
+        <p class="hint">选择一张图片，选好目录后点击提交。图片会通过你的 GitHub 账号推送到仓库 <code>main</code> 分支，并自动触发打包发布到 Releases。</p>
+
+        <div class="form-row">
+          <label for="upload-file">图片文件</label>
+          <input id="upload-file" type="file" accept="image/png,image/jpeg,image/gif,image/webp" />
+        </div>
+
+        <div class="form-row">
+          <label for="upload-dir">存放目录</label>
+          <select id="upload-dir">
+            <option value="">根目录（表情包 / 群友集体发言）</option>
+          </select>
+          <input id="upload-dir-custom" type="text" placeholder="或输入新目录名（比如 阿清）" />
+        </div>
+
+        <div class="form-row">
+          <label for="upload-name">文件名（留空则用原文件名）</label>
+          <input id="upload-name" type="text" placeholder="简短概括，例如：吃人算不算非遗" />
+        </div>
+
+        <div class="form-row">
+          <label for="upload-comment">提交留言（可选）</label>
+          <input id="upload-comment" type="text" placeholder="一句话描述这张图" />
+        </div>
+
+        <div id="upload-preview" class="preview hidden">
+          <img id="upload-preview-img" alt="预览" />
+        </div>
+
+        <button id="btn-submit" class="btn btn-primary btn-block" disabled>提交图片</button>
+        <p id="upload-msg" class="msg"></p>
+      </div>
+    </section>
+
+    <!-- ============ 评论区 ============ -->
+    <section id="view-comments" class="view hidden">
+      <div class="card">
+        <h2>💬 评论区</h2>
+        <p class="hint">评论通过 GitHub <a href="https://docs.github.com/rest/issues/comments" target="_blank" rel="noopener">Issue 评论 API</a> 存储（挂在仓库的一个隐藏 Issue 上），需要登录 GitHub 后才能发言。</p>
+        <div id="comments-list" class="comments"></div>
+        <div class="comment-form">
+          <textarea id="comment-input" rows="3" placeholder="写下你的吐槽…（记得先登录）"></textarea>
+          <button id="btn-comment-submit" class="btn btn-primary">发表评论</button>
+        </div>
+        <p id="comment-msg" class="msg"></p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>纯属娱乐 · 请勿上升到人身攻击 · <a href="https://github.com/ChenRay-team/Outrageous-statement-Hub" target="_blank" rel="noopener">仓库</a></p>
+    <p>本站为静态页面，通过 GitHub API 与仓库交互 · <a href="https://github.com/ChenRay-team/Outrageous-statement-Hub/blob/main/LICENSE" target="_blank" rel="noopener">许可证</a></p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
