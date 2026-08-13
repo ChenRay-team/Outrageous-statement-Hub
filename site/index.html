@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>逆天言论HUB</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💩</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>H</text></svg>" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header class="topbar">
     <div class="topbar-inner">
-      <h1 class="logo">💩 逆天言论HUB</h1>
+      <h1 class="logo">逆天言论HUB</h1>
       <nav class="topbar-nav">
-        <button id="btn-gallery" class="nav-btn active">📸 图库</button>
-        <button id="btn-upload" class="nav-btn">⬆️ 上传图片</button>
-        <button id="btn-comments" class="nav-btn">💬 评论区</button>
-        <a class="nav-btn repo-link" href="https://github.com/ChenRay-team/Outrageous-statement-Hub" target="_blank" rel="noopener">GitHub ⧉</a>
+        <button id="btn-gallery" class="nav-btn active">图库</button>
+        <button id="btn-upload" class="nav-btn">上传图片</button>
+        <button id="btn-comments" class="nav-btn">评论区</button>
+        <a class="nav-btn repo-link" href="https://github.com/ChenRay-team/Outrageous-statement-Hub" target="_blank" rel="noopener">GitHub</a>
       </nav>
       <div class="user-area">
         <span id="login-status" class="login-status"></span>
@@ -29,9 +29,9 @@
     <!-- ============ 图库 ============ -->
     <section id="view-gallery" class="view">
       <div class="toolbar">
-        <nav id="breadcrumb" class="breadcrumb"><button class="crumb active" data-path="">🏠 根目录</button></nav>
+        <nav id="breadcrumb" class="breadcrumb"><button class="crumb active" data-path="">根目录</button></nav>
         <span id="dir-count" class="dir-count"></span>
-        <input id="search-input" type="search" placeholder="🔍 在当前目录搜索…" />
+        <input id="search-input" type="search" placeholder="搜索当前目录…" />
         <label class="chk"><input id="chk-gif-only" type="checkbox" /> 只看 GIF</label>
       </div>
       <div id="gallery" class="gallery"></div>
@@ -41,7 +41,7 @@
     <!-- ============ 上传 ============ -->
     <section id="view-upload" class="view hidden">
       <div class="card">
-        <h2>⬆️ 提交新图片</h2>
+        <h2>提交新图片</h2>
         <p class="hint">选择一张图片，选好目录后点击提交。图片会通过你的 GitHub 账号推送到仓库 <code>main</code> 分支，并自动触发打包发布到 Releases。</p>
 
         <div class="form-row">
@@ -79,7 +79,7 @@
     <!-- ============ 评论区 ============ -->
     <section id="view-comments" class="view hidden">
       <div class="card">
-        <h2>💬 评论区</h2>
+        <h2>评论区</h2>
         <p class="hint">评论通过 GitHub <a href="https://docs.github.com/rest/issues/comments" target="_blank" rel="noopener">Issue 评论 API</a> 存储（挂在仓库的一个隐藏 Issue 上），需要登录 GitHub 后才能发言。</p>
         <div id="comments-list" class="comments"></div>
         <div class="comment-form">

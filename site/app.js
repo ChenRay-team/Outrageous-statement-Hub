@@ -9,7 +9,7 @@
 
 // ============ 配置 ============
 // 改成你自己的 Client ID（GitHub OAuth App，用于设备授权码登录）
-const CLIENT_ID = 'YOUR_GITHUB_CLIENT_ID';
+const CLIENT_ID = '272d057a860c25f31c4cc24b418e50305bd2947b';
 // 仓库信息
 const REPO_OWNER = 'ChenRay-team';
 const REPO_NAME = 'Outrageous-statement-Hub';
@@ -23,21 +23,15 @@ const RAW_BASE = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/$
 
 // 顶层目录名（人/合集分类），不在列表里的视为普通目录
 const FOLDER_LABELS = {
-  '@HereIsEunsia_': '🖼 @HereIsEunsia_',
-  'angushushu': '🗣 angushushu',
-  'BushiAA': '🗣 BushiAA',
-  'lonelyxiya': '🗣 lonelyxiya',
-  'player233lol': '🗣 player233lol',
-  'xiaowei111': '🗣 xiaowei111',
-  '妈妈合集': '👩 妈妈合集',
-  '奶奶合集': '👵 奶奶合集',
-  '琼野': '🗣 琼野',
-};
-
-// 文件夹大图标（可选）
-const FOLDER_ICONS = {
-  '妈妈合集': '👩',
-  '奶奶合集': '👵',
+  '@HereIsEunsia_': '@HereIsEunsia_',
+  'angushushu': 'angushushu',
+  'BushiAA': 'BushiAA',
+  'lonelyxiya': 'lonelyxiya',
+  'player233lol': 'player233lol',
+  'xiaowei111': 'xiaowei111',
+  '妈妈合集': '妈妈合集',
+  '奶奶合集': '奶奶合集',
+  '琼野': '琼野',
 };
 
 // ============ 状态 ============
@@ -153,7 +147,7 @@ function logout() {
 function renderLogin() {
   $('btn-login').classList.toggle('hidden', !!user);
   $('btn-logout').classList.toggle('hidden', !user);
-  $('login-status').textContent = user ? `👤 ${user.login}` : '未登录';
+  $('login-status').textContent = user ? `${user.login}` : '未登录';
   $('btn-comment-submit').disabled = !user;
 }
 
@@ -182,7 +176,7 @@ function populateDirs() {
   dirNames.forEach(d => {
     const o = document.createElement('option');
     o.value = d;
-    o.textContent = FOLDER_LABELS[d] || `📁 ${d}`;
+    o.textContent = FOLDER_LABELS[d] || d;
     sel.appendChild(o);
   });
 }
@@ -221,12 +215,10 @@ function renderGallery() {
       dirList.push(d);
     });
     dirList.sort().forEach(d => {
-      const icon = FOLDER_ICONS[d] || '📁';
       const cnt = allImages.filter(p => p === d || p.startsWith(d + '/')).length;
       const card = document.createElement('div');
       card.className = 'folder-card';
       card.innerHTML = `
-        <div class="folder-icon">${icon}</div>
         <div class="folder-name">${esc(FOLDER_LABELS[d] || d)}</div>
         <div class="folder-count">${cnt} 张图片</div>`;
       card.addEventListener('click', () => navigateDir(d));
@@ -238,7 +230,6 @@ function renderGallery() {
       const card = document.createElement('div');
       card.className = 'folder-card';
       card.innerHTML = `
-        <div class="folder-icon">🎉</div>
         <div class="folder-name">表情包 / 集体发言</div>
         <div class="folder-count">${rootFiles.length} 张图片</div>`;
       card.addEventListener('click', () => navigateDir('__root__'));
@@ -278,7 +269,6 @@ function renderGallery() {
     const card = document.createElement('div');
     card.className = 'folder-card';
     card.innerHTML = `
-      <div class="folder-icon">📁</div>
       <div class="folder-name">${esc(seg)}</div>
       <div class="folder-count">${cnt} 张图片</div>`;
     card.addEventListener('click', () => navigateDir(full));
@@ -318,7 +308,7 @@ function renderBreadcrumb() {
   // 根目录
   const root = document.createElement('button');
   root.className = 'crumb' + (segs.length === 0 ? ' active' : '');
-  root.textContent = '🏠 根目录';
+  root.textContent = '根目录';
   root.dataset.path = '';
   root.addEventListener('click', () => navigateDir(''));
   nav.appendChild(root);

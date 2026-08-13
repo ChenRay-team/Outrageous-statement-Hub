@@ -149,7 +149,6 @@ main { flex: 1; max-width: 1100px; width: 100%; margin: 0 auto; padding: 24px 20
   user-select: none;
 }
 .folder-card:hover { transform: translateY(-3px); border-color: var(--accent); }
-.folder-icon { font-size: 42px; line-height: 1; }
 .folder-name { font-size: 15px; font-weight: 600; word-break: break-all; text-align: center; }
 .folder-count { font-size: 12px; color: var(--muted); }
 
