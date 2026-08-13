@@ -9,7 +9,7 @@
 
 // ============ 配置 ============
 // 改成你自己的 Client ID（GitHub OAuth App，用于设备授权码登录）
-const CLIENT_ID = '272d057a860c25f31c4cc24b418e50305bd2947b';
+const CLIENT_ID = 'Ov23lil3ni9BVMNmB5UU';
 // 仓库信息
 const REPO_OWNER = 'ChenRay-team';
 const REPO_NAME = 'Outrageous-statement-Hub';
