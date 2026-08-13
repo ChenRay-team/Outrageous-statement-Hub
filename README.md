@@ -17,16 +17,21 @@
 - **💬 评论区**：登录 GitHub 后可以吐槽、留言
 
 > [!IMPORTANT]
-> 登录功能需要 **OAuth 代理（Cloudflare Worker）**：由于 GitHub 设备流接口不支持跨域（CORS），纯 Pages 网站无法直接登录。请按下方说明部署 `oauth-worker/worker.js` 到 Cloudflare Workers，把生成的 Worker 地址填到 `site/app.js` 顶部的 `OAUTH_PROXY`。
+> 登录方式：在网页右上角**粘贴你自己的 GitHub 个人访问令牌 (PAT)** 即可登录（无需注册、无需服务器）。令牌只保存在你浏览器的会话里，不写入任何存储，关闭页面即失效。
 
-### 🔐 部署 OAuth 代理（Cloudflare Worker）
-1. 注册 [Cloudflare](https://dash.cloudflare.com)（免费）
-2. 打开 **Workers & Pages** → **Create application** → **Worker** → 创建
-3. 把 `oauth-worker/worker.js` 的代码粘贴进编辑器，保存并部署
-4. 部署后你会得到一个 Worker 地址，形如 `https://xxx.workers.dev`
-5. 把该地址填到 `site/app.js` 顶部的 `OAUTH_PROXY` 常量（需重新提交推送）
+### 🔑 如何获取 GitHub 令牌（PAT）
+1. 打开 GitHub → 右上角头像 → **Settings** → 最底部 **Developer settings**
+2. 选 **Personal access tokens** → **Fine-grained tokens** → **Generate new token**
+3. 填写：
+   - Token name：随意（如 `hub`）
+   - **Repository access**：选 **Only select repositories** → 勾选本仓库 `Outrageous-statement-Hub`
+   - **Permissions** → **Repository permissions**：
+     - `Contents` → **Read and write**（上传图片需要）
+     - `Issues` → **Read and write**（发评论需要）
+4. 点 **Generate token**，**立即复制**（只显示一次）
+5. 回到网站右上角输入框，粘贴令牌，点 **登录** 即可
 
-> 设备流换 token 只用 `client_id`（不需要 `client_secret`），所以 Worker 里不用存任何密钥，可放心部署。
+> ⚠️ 令牌相当于你的 GitHub 账号凭证，**不要发给任何人**。本网站只在内存中用它调用 GitHub API，用完即走。
 
 # 如何提交逆天发言
 1. 表情包和群友集体发言直接放在仓库**根目录**即可

@@ -1,18 +1,13 @@
 /* ============================================================
  * 逆天言论HUB 站点逻辑
  * 纯静态 GitHub Pages，通过 GitHub REST API 与仓库交互：
- *  - 登录：GitHub 设备授权码流程（无需自建服务器，浏览器确认即可）
+ *  - 登录：粘贴自己的 GitHub 个人访问令牌 (PAT)
  *  - 图库：Git Trees + Contents API 列出/预览仓库图片
  *  - 上传：Contents API 直接把图片提交到 main 分支
  *  - 评论：GitHub Issue 评论 API（挂在隐藏 Issue 上）
  * ============================================================ */
 
 // ============ 配置 ============
-// GitHub OAuth App 的 Client ID（设备授权码登录）
-const CLIENT_ID = 'Ov23lil3ni9BVMNmB5UU';
-// OAuth 代理地址：部署 Cloudflare Worker 后把地址填这里
-// 例如 https://your-worker-name.your-subdomain.workers.dev
-const OAUTH_PROXY = 'https://tiny-meadow-ee1f.3750196490.workers.dev';
 // 仓库信息
 const REPO_OWNER = 'ChenRay-team';
 const REPO_NAME = 'Outrageous-statement-Hub';
@@ -87,57 +82,26 @@ async function gh(path, opts = {}) {
   return res.json();
 }
 
-// ============ 登录（设备授权码流程） ============
+// ============ 登录（粘贴 GitHub PAT） ============
 async function login() {
-  if (!CLIENT_ID || CLIENT_ID === 'YOUR_GITHUB_CLIENT_ID') {
-    alert('还没有配置 GitHub OAuth App 的 Client ID。\n请到 GitHub 创建一个 OAuth App（Homepage 填本页地址），把 Client ID 填到 site/app.js 顶部的 CLIENT_ID。');
+  const input = $('token-input');
+  const pat = (input.value || '').trim();
+  if (!pat) {
+    setMsg('upload-msg', '请先在输入框粘贴你的 GitHub 令牌 (PAT)', 'err');
     return;
   }
   try {
-    // 1) 申请设备码（走 OAuth 代理解决 CORS）
-    const reg = await fetch(`${OAUTH_PROXY}/device/code`, {
-      method: 'POST',
-      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-      body: JSON.stringify({ client_id: CLIENT_ID, scope: 'repo' }),
-    }).then(r => r.json());
-    if (reg.error) throw new Error(`申请设备码失败: ${reg.error_description || reg.error}`);
-    const { device_code, user_code, verification_uri, interval, expires_in } = reg;
-
-    // 2) 提示用户去浏览器输入验证码
-    alert(`请到浏览器打开：\n${verification_uri}\n\n输入设备码：${user_code}\n（打开后自动开始，本弹窗确定后等待授权，最长 ${Math.floor(expires_in / 60)} 分钟）`);
-    window.open(verification_uri, '_blank');
-
-    // 3) 轮询获取令牌（走 OAuth 代理解决 CORS）
-    const poll = async () => {
-      const r = await fetch(`${OAUTH_PROXY}/access_token`, {
-        method: 'POST',
-        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
-        body: JSON.stringify({ client_id: CLIENT_ID, device_code, grant_type: 'urn:ietf:params:oauth:grant-type:device_code' }),
-      }).then(r => r.json());
-      if (r.access_token) return r.access_token;
-      if (r.error === 'authorization_pending') return null;      // 继续等
-      if (r.error === 'slow_down') { await sleep(5); return null; }
-      throw new Error(`授权失败: ${r.error_description || r.error}`);
-    };
-
-    const sleep = (s) => new Promise(res => setTimeout(res, s * 1000));
-    const deadline = Date.now() + (expires_in || 900) * 1000;
-    let access_token = null;
-    while (Date.now() < deadline) {
-      await sleep(interval || 5);
-      access_token = await poll();
-      if (access_token) break;
-    }
-    if (!access_token) throw new Error('授权超时，请重试');
-
-    token = access_token;
-    sessionStorage.setItem('hub_token', access_token);
+    // 用令牌调用 /user 验证是否有效
+    token = pat;
     user = await gh('/user');
+    sessionStorage.setItem('hub_token', pat);
     renderLogin();
     setMsg('upload-msg', `登录成功：${user.login}`, 'ok');
+    input.value = '';
     await loadGallery();   // 登录后顺便刷新图库（评论权限也解锁）
     await loadComments();
   } catch (e) {
+    token = null;
     setMsg('upload-msg', '登录失败：' + e.message, 'err');
   }
 }
@@ -166,10 +130,12 @@ async function restoreSession() {
 }
 
 function renderLogin() {
-  $('btn-login').classList.toggle('hidden', !!user);
-  $('btn-logout').classList.toggle('hidden', !user);
+  const loggedIn = !!user;
+  $('btn-login').classList.toggle('hidden', loggedIn);
+  $('btn-logout').classList.toggle('hidden', !loggedIn);
+  $('token-input').classList.toggle('hidden', loggedIn);
   $('login-status').textContent = user ? `${user.login}` : '未登录';
-  $('btn-comment-submit').disabled = !user;
+  $('btn-comment-submit').disabled = !loggedIn;
 }
 
 // ============ 图库（文件夹浏览） ============
@@ -511,6 +477,7 @@ function init() {
   navBtns.comments.addEventListener('click', () => showView('comments'));
   // 登录 / 退出
   $('btn-login').addEventListener('click', login);
+  $('token-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
   $('btn-logout').addEventListener('click', () => { logout(); loadGallery(); loadComments(); });
   // 图库
   $('search-input').addEventListener('input', renderGallery);
