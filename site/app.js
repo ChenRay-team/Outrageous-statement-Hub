@@ -12,7 +12,7 @@
 const CLIENT_ID = 'Ov23lil3ni9BVMNmB5UU';
 // OAuth 代理地址：部署 Cloudflare Worker 后把地址填这里
 // 例如 https://your-worker-name.your-subdomain.workers.dev
-const OAUTH_PROXY = 'https://oauth-proxy.your-worker.workers.dev';
+const OAUTH_PROXY = 'https://tiny-meadow-ee1f.3750196490.workers.dev';
 // 仓库信息
 const REPO_OWNER = 'ChenRay-team';
 const REPO_NAME = 'Outrageous-statement-Hub';
