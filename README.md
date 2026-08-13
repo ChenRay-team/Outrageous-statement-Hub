@@ -8,15 +8,8 @@
 # 这是什么
 这个是一个阿清创建的收集群里的一些言论/表情包的存放仓库，以方便查看黑历史
 
-# 🌐 在线网站
-> 部署在 GitHub Pages，地址：`https://ChenRay-team.github.io/Outrageous-statement-Hub/site/`
-
-在线网站提供：
-- **📸 图库预览**：浏览仓库里全部图片（按目录分类）
-- **⬆️ 快捷上传**：选好图片和目录后，一键跳到 GitHub 网页上传页面，拖入图片即可提交
-- **💬 评论区**：浏览大家的留言，发言跳转到 GitHub
-
-> 网站是纯静态页面（无后端、无需登录），群友用自己已有的 GitHub 账号即可上传/发言，完全免费。
+# 📦 自动打包
+每当有新的图片推送到本仓库，会自动把所有图片打包成 zip 并发布到 [Releases](https://github.com/ChenRay-team/Outrageous-statement-Hub/releases)，群友可随时下载最新合集。
 
 # 如何提交逆天发言
 1. 表情包和群友集体发言直接放在仓库**根目录**即可
