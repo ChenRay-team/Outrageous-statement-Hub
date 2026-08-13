@@ -18,10 +18,7 @@
         <a class="nav-btn repo-link" href="https://github.com/ChenRay-team/Outrageous-statement-Hub" target="_blank" rel="noopener">GitHub</a>
       </nav>
       <div class="user-area">
-        <span id="login-status" class="login-status"></span>
-        <input id="token-input" type="password" class="token-input hidden" placeholder="粘贴 GitHub 令牌 (PAT)" autocomplete="off" />
-        <button id="btn-login" class="btn btn-primary hidden">登录</button>
-        <button id="btn-logout" class="btn btn-ghost hidden">退出</button>
+        <span id="login-status" class="login-status">无需登录 · 直接上传</span>
       </div>
     </div>
   </header>
@@ -43,7 +40,7 @@
     <section id="view-upload" class="view hidden">
       <div class="card">
         <h2>提交新图片</h2>
-        <p class="hint">选择一张图片，选好目录后点击提交。图片会通过你的 GitHub 账号推送到仓库 <code>main</code> 分支，并自动触发打包发布到 Releases。</p>
+        <p class="hint">选好图片和目录后，点"去 GitHub 上传"，会打开对应的 GitHub 网页上传页面，把图片拖进去、写个简短文件名、Commit 即可。管理员会审核并合入主分支，自动打包发布到 Releases。</p>
 
         <div class="form-row">
           <label for="upload-file">图片文件</label>
@@ -72,7 +69,7 @@
           <img id="upload-preview-img" alt="预览" />
         </div>
 
-        <button id="btn-submit" class="btn btn-primary btn-block" disabled>提交图片</button>
+        <button id="btn-submit" class="btn btn-primary btn-block" disabled>去 GitHub 上传</button>
         <p id="upload-msg" class="msg"></p>
       </div>
     </section>
@@ -81,11 +78,11 @@
     <section id="view-comments" class="view hidden">
       <div class="card">
         <h2>评论区</h2>
-        <p class="hint">评论通过 GitHub <a href="https://docs.github.com/rest/issues/comments" target="_blank" rel="noopener">Issue 评论 API</a> 存储（挂在仓库的一个隐藏 Issue 上），需要登录 GitHub 后才能发言。</p>
+        <p class="hint">留言挂在仓库的一个隐藏 Issue 上，点下方按钮去 GitHub 发言。</p>
         <div id="comments-list" class="comments"></div>
         <div class="comment-form">
-          <textarea id="comment-input" rows="3" placeholder="写下你的吐槽…（记得先登录）"></textarea>
-          <button id="btn-comment-submit" class="btn btn-primary">发表评论</button>
+          <textarea id="comment-input" rows="3" placeholder="想吐槽的先写在这，点了会自动带过去…（可选）"></textarea>
+          <button id="btn-comment-submit" class="btn btn-primary">去 GitHub 发言</button>
         </div>
         <p id="comment-msg" class="msg"></p>
       </div>

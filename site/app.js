@@ -1,10 +1,9 @@
 /* ============================================================
  * 逆天言论HUB 站点逻辑
- * 纯静态 GitHub Pages，通过 GitHub REST API 与仓库交互：
- *  - 登录：粘贴自己的 GitHub 个人访问令牌 (PAT)
+ * 纯静态 GitHub Pages（无后端、无 Worker、无需登录）：
  *  - 图库：Git Trees + Contents API 列出/预览仓库图片
- *  - 上传：Contents API 直接把图片提交到 main 分支
- *  - 评论：GitHub Issue 评论 API（挂在隐藏 Issue 上）
+ *  - 上传：引导跳转到 GitHub 网页上传（用群友自己的 GitHub 账号）
+ *  - 评论：只读展示仓库 Issue 评论，发言跳转 GitHub
  * ============================================================ */
 
 // ============ 配置 ============
@@ -33,8 +32,6 @@ const FOLDER_LABELS = {
 };
 
 // ============ 状态 ============
-let token = null;           // GitHub 令牌（内存中，不落地）
-let user = null;            // 当前用户信息
 let allImages = [];         // 全部图片路径
 let dirNames = [];          // 顶层目录名
 let currentDir = '';        // 当前浏览目录（'' = 根目录）
@@ -71,71 +68,13 @@ async function gh(path, opts = {}) {
     'X-GitHub-Api-Version': '2022-11-28',
     ...(opts.headers || {}),
   };
-  if (token) headers['Authorization'] = `Bearer ${token}`;
   const res = await fetch(API + path, { ...opts, headers });
-  if (res.status === 401) { logout(); throw new Error('登录已失效，请重新登录'); }
   if (!res.ok) {
     let detail = '';
     try { const j = await res.json(); detail = j.message || ''; } catch (e) {}
     throw new Error(`GitHub API ${res.status}: ${detail || res.statusText}`);
   }
   return res.json();
-}
-
-// ============ 登录（粘贴 GitHub PAT） ============
-async function login() {
-  const input = $('token-input');
-  const pat = (input.value || '').trim();
-  if (!pat) {
-    setMsg('upload-msg', '请先在输入框粘贴你的 GitHub 令牌 (PAT)', 'err');
-    return;
-  }
-  try {
-    // 用令牌调用 /user 验证是否有效
-    token = pat;
-    user = await gh('/user');
-    sessionStorage.setItem('hub_token', pat);
-    renderLogin();
-    setMsg('upload-msg', `登录成功：${user.login}`, 'ok');
-    input.value = '';
-    await loadGallery();   // 登录后顺便刷新图库（评论权限也解锁）
-    await loadComments();
-  } catch (e) {
-    token = null;
-    setMsg('upload-msg', '登录失败：' + e.message, 'err');
-  }
-}
-
-function logout() {
-  token = null;
-  user = null;
-  sessionStorage.removeItem('hub_token');
-  renderLogin();
-}
-
-// 尝试从 sessionStorage 恢复登录会话
-async function restoreSession() {
-  const saved = sessionStorage.getItem('hub_token');
-  if (!saved) return;
-  token = saved;
-  try {
-    user = await gh('/user');
-    renderLogin();
-  } catch (e) {
-    // token 失效则清除
-    token = null;
-    sessionStorage.removeItem('hub_token');
-    renderLogin();
-  }
-}
-
-function renderLogin() {
-  const loggedIn = !!user;
-  $('btn-login').classList.toggle('hidden', loggedIn);
-  $('btn-logout').classList.toggle('hidden', !loggedIn);
-  $('token-input').classList.toggle('hidden', loggedIn);
-  $('login-status').textContent = user ? `${user.login}` : '未登录';
-  $('btn-comment-submit').disabled = !loggedIn;
 }
 
 // ============ 图库（文件夹浏览） ============
@@ -342,7 +281,7 @@ function openLightbox(src, alt) {
   document.body.appendChild(lb);
 }
 
-// ============ 上传 ============
+// ============ 上传（跳转 GitHub 网页上传） ============
 function buildPath() {
   let dir = $('upload-dir').value;
   const custom = $('upload-dir-custom').value.trim();
@@ -357,58 +296,20 @@ function buildPath() {
   return dir ? `${dir}/${name}` : name;
 }
 
-async function submitImage() {
-  if (!user) { setMsg('upload-msg', '请先登录 GitHub 再提交', 'err'); return; }
+// 打开 GitHub 网页上传页（跳到选定目录）
+function submitImage() {
   const file = $('upload-file').files[0];
   if (!file) { setMsg('upload-msg', '请先选择一张图片', 'err'); return; }
 
-  let path;
-  try { path = buildPath(); }
-  catch (e) { setMsg('upload-msg', e.message, 'err'); return; }
+  let dir = $('upload-dir').value;
+  const custom = $('upload-dir-custom').value.trim();
+  if (custom) dir = custom;
 
-  $('btn-submit').disabled = true;
-  setMsg('upload-msg', '正在上传…', 'ok');
-  try {
-    const base64 = await fileToBase64(file);
-    // 检查同名文件是否已存在
-    let sha = null;
-    try {
-      const meta = await gh(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(path)}`);
-      sha = meta.sha;
-    } catch (e) { /* 不存在则新建 */ }
-
-    await gh(`/repos/${REPO_OWNER}/${REPO_NAME}/contents/${encodeURIComponent(path)}`, {
-      method: 'PUT',
-      body: JSON.stringify({
-        message: $('upload-comment').value.trim() || `上传图片 ${path}`,
-        content: base64,
-        branch: DEFAULT_BRANCH,
-        ...(sha ? { sha } : {}),
-      }),
-    });
-    setMsg('upload-msg', `✅ 上传成功：${path}\n已触发自动打包发布到 Releases，稍等片刻即可下载。`, 'ok');
-    $('upload-file').value = '';
-    $('upload-name').value = '';
-    $('upload-dir-custom').value = '';
-    $('upload-preview').classList.add('hidden');
-    await loadGallery();
-  } catch (e) {
-    setMsg('upload-msg', '上传失败：' + e.message, 'err');
-  } finally {
-    $('btn-submit').disabled = false;
-  }
-}
-
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const r = new FileReader();
-    r.onload = () => {
-      const b64 = String(r.result).split(',')[1];
-      resolve(b64);
-    };
-    r.onerror = reject;
-    r.readAsDataURL(file);
-  });
+  // 拼 GitHub 网页上传地址（可直接拖文件进去）
+  const uploadBase = `https://github.com/${REPO_OWNER}/${REPO_NAME}/upload/${DEFAULT_BRANCH}`;
+  const url = dir ? `${uploadBase}/${encodeURIComponent(dir)}` : uploadBase;
+  window.open(url, '_blank');
+  setMsg('upload-msg', '已打开 GitHub 上传页面。把你选好的图片拖进去，写个简短的文件名，点 Commit changes 即可。管理员会审核并合入主分支。', 'ok');
 }
 
 // ============ 评论 ============
@@ -432,34 +333,30 @@ function renderComments() {
   visibleComments.forEach(c => {
     const div = document.createElement('div');
     div.className = 'comment';
+    // 解析正文开头的 **昵称**： 格式
+    let author = c.user.login;
+    let body = c.body || '';
+    const m = body.match(/^\*\*(.+?)\*\*：?(.*)$/s);
+    if (m && m[1].trim()) { author = m[1].trim(); body = m[2].trim(); }
     div.innerHTML = `
       <div class="comment-head">
         <img class="comment-avatar" src="${esc(c.user.avatar_url)}" alt="" />
-        <span class="comment-author">${esc(c.user.login)}</span>
+        <span class="comment-author">${esc(author)}</span>
         <span class="comment-time">${fmtTime(c.created_at)}</span>
       </div>
-      <div class="comment-body">${esc(c.body)}</div>`;
+      <div class="comment-body">${esc(body)}</div>`;
     box.appendChild(div);
   });
 }
 
-async function postComment() {
-  if (!user) { setMsg('comment-msg', '请先登录 GitHub 再评论', 'err'); return; }
-  const body = $('comment-input').value.trim();
-  if (!body) { setMsg('comment-msg', '评论内容不能为空', 'err'); return; }
-  $('btn-comment-submit').disabled = true;
-  try {
-    await gh(`/repos/${REPO_OWNER}/${REPO_NAME}/issues/${COMMENTS_ISSUE_NUMBER}/comments`, {
-      method: 'POST',
-      body: JSON.stringify({ body }),
-    });
-    $('comment-input').value = '';
-    setMsg('comment-msg', '✅ 评论已发布', 'ok');
-    await loadComments();
-  } catch (e) {
-    setMsg('comment-msg', '评论失败：' + e.message, 'err');
-  } finally {
-    $('btn-comment-submit').disabled = false;
+// 跳转到 GitHub 发言
+function goComment() {
+  const text = $('comment-input').value.trim();
+  const name = $('comment-name').value.trim();
+  const url = `https://github.com/${REPO_OWNER}/${REPO_NAME}/issues/${COMMENTS_ISSUE_NUMBER}#new_comment_field`;
+  window.open(url, '_blank');
+  if (name || text) {
+    setMsg('comment-msg', '已打开 GitHub 评论区，粘贴你的内容后发言即可。（本页内容建议复制过去）', 'ok');
   }
 }
 
@@ -475,10 +372,6 @@ function init() {
   navBtns.gallery.addEventListener('click', () => showView('gallery'));
   navBtns.upload.addEventListener('click', () => showView('upload'));
   navBtns.comments.addEventListener('click', () => showView('comments'));
-  // 登录 / 退出
-  $('btn-login').addEventListener('click', login);
-  $('token-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
-  $('btn-logout').addEventListener('click', () => { logout(); loadGallery(); loadComments(); });
   // 图库
   $('search-input').addEventListener('input', renderGallery);
   $('chk-gif-only').addEventListener('change', renderGallery);
@@ -500,12 +393,10 @@ function init() {
     // 自定义目录时选中它（display 用）
   });
   // 评论
-  $('btn-comment-submit').addEventListener('click', postComment);
+  $('btn-comment-submit').addEventListener('click', goComment);
 
-  renderLogin();
   loadGallery();
   loadComments();
-  restoreSession();   // 恢复登录会话（异步，不阻塞图库加载）
 }
 
 // 工具函数 setMsg
