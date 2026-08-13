@@ -9,7 +9,7 @@
 这个是一个阿清创建的收集群里的一些言论/表情包的存放仓库，以方便查看黑历史
 
 # 🌐 在线网站
-> 部署在 GitHub Pages，地址：`https://ChenRay-team.github.io/Outrageous-statement-Hub/`
+> 部署在 GitHub Pages，地址：`https://ChenRay-team.github.io/Outrageous-statement-Hub/site/`
 
 在线网站提供：
 - **📸 图库预览**：浏览仓库里全部图片（按目录分类）
